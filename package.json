@@ -1,0 +1,19 @@
+{
+  "name": "fis-preprocessor-requirejs",
+  "version": "0.0.0",
+  "description": "make requirejs work with fis",
+  "keywords": "fis requirejs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hefangshi/fis-preprocessor-requirejs"
+  },
+  "author": "hefangshi",
+  "license": "BSD",
+  "dependencies": {
+    "esprima": "1.2.2"
+  }
+}
