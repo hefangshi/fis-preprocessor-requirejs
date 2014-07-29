@@ -1,14 +1,14 @@
 var transform = require('./lib/transform.js');
 var idNormalizer = require('./lib/idNormalizer.js');
 
-function extHtml(file, content, opt){
+function extHtml(file, content, opt, normalizer){
     var reg = /(<script(?:(?=\s)[\s\S]*?["'\s\w\/\-]>|>))([\s\S]*?)(?=<\/script\s*>|$)|<!--(?!\[)([\s\S]*?)(-->|$)/ig;
     var replace = function(m, $1, $2, $3, $4, $5, $6, $7, $8){
         if($1){//<script>
             if (/(\ssrc\s*=\s*)('[^']+'|"[^"]+"|[^\s\/>]+)/ig.test($1) === false){
                 if(!/\s+type\s*=/i.test($1) || /\s+type\s*=\s*(['"]?)text\/javascript\1/i.test($1)) {
                     //处理内嵌脚本
-                    m = $1 + extJs(file ,$2, opt);
+                    m = $1 + extJs(file ,$2, opt, normalizer);
                 }
             }
         }
@@ -17,9 +17,9 @@ function extHtml(file, content, opt){
     return content.replace(reg, replace);
 }
 
-function extJs(file, content,  opt){
+function extJs(file, content, opt, normalizer){
     var asyncList = [];
-    content = transform(file, content, idNormalizer, asyncList);
+    content = transform(file, content, normalizer, asyncList);
     if (asyncList.length){
         if (file.extras.requirejs && file.extras.requirejs.syncLoad){
             asyncList.forEach(function(id){
@@ -33,11 +33,12 @@ function extJs(file, content,  opt){
     return content;
 }
 
-module.exports = function (content, file, opt) {
+module.exports = function (content, file, opt, aaa) {
+    var normalizer = idNormalizer(opt);
     if (file.isHtmlLike) {
-        content = extHtml(file, content, opt);
+        content = extHtml(file, content, opt, normalizer);
     }else if (file.isJsLike){
-        content = extJs(file, content, opt);
+        content = extJs(file, content, opt, normalizer);
     }
     return content;
 };
