@@ -1,6 +1,6 @@
 var transform = require('./lib/transform.js');
 var idNormalizer = require('./lib/idNormalizer.js');
-
+var pathCache;
 function extHtml(file, content, opt, normalizer){
     var reg = /(<script(?:(?=\s)[\s\S]*?["'\s\w\/\-]>|>))([\s\S]*?)(?=<\/script\s*>|$)|<!--(?!\[)([\s\S]*?)(-->|$)/ig;
     var replace = function(m, $1, $2, $3, $4, $5, $6, $7, $8){
@@ -33,8 +33,26 @@ function extJs(file, content, opt, normalizer){
     return content;
 }
 
-module.exports = function (content, file, opt, aaa) {
-    var normalizer = idNormalizer(opt);
+function initPathCache(opt){
+    if (pathCache)
+        return;
+    pathCache = {};
+    var paths = opt.paths || {};
+    var url = opt.baseUrl || ".";
+    fis.util.map(paths, function(key, path){
+        var file = fis.util(fis.project.getProjectPath(), url + "/" + path + ".js");
+        if (file){
+            pathCache[file] = key;
+        }
+    });
+}
+
+module.exports = function (content, file, opt) {
+    initPathCache(opt);
+    if (pathCache[file.realpath]){
+        file.id = pathCache[file.realpath];
+    }
+    var normalizer = idNormalizer(opt, pathCache);
     if (file.isHtmlLike) {
         content = extHtml(file, content, opt, normalizer);
     }else if (file.isJsLike){
